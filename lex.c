@@ -18,7 +18,6 @@
 #define QUOTE "'"
 #define NUMBERS "0123456789"
 #define SYMBOLCHARS "abcdefghijklmnopqrstuvwqyzABCDEFGHIJKLMNOPQRSTUVWQYZ0123456789-?"
-#define OPERATORCHARS "+-*/=<>"
 
 /*
  * A struct for the lexer. The members are only used inside this module.
@@ -151,22 +150,52 @@ char *skip(lexer *l, char *skippedchars) {
  * Caller must free the token with token_free.
  */
 token *lexer_next_token(lexer *l) {
-	// Lex end of data:
+	// End of data:
 	/*if (('\0' == (*l->next)) || (l->next >= l->dataend)) {*/
 	if (l->next >= l->dataend) {
 		return eof(l);
 
-	// Lex whitespace:
+	// Whitespace:
 	} else if (acceptRun(l, WHITESPACE)) {
 		return emit(l, TYPE_WHITESPACE);
 
-	// Lex parens:
+	// Parens:
 	} else if (accept(l, "(")) {
 		return emit(l, TYPE_OPEN_PAREN);
 	} else if (accept(l, ")")) {
 		return emit(l, TYPE_CLOSE_PAREN);
 
-	// Lex numbers:
+	// One-character operators:
+	} else if (accept(l, "+")) {
+		return emit(l, TYPE_SUM);
+	} else if (accept(l, "-")) {
+		return emit(l, TYPE_SUBTRACT);
+	} else if (accept(l, "*")) {
+		return emit(l, TYPE_MULTIPLY);
+	} else if (accept(l, "=")) {
+		return emit(l, TYPE_EQUALS);
+
+	// One- or two character operators:
+	} else if (accept(l, "/")) {
+		if (accept(l, "=")) {
+			return emit(l, TYPE_NOT_EQUALS);
+		} else {
+			return emit(l, TYPE_DIVIDE);
+		}
+	} else if (accept(l, "<")) {
+		if (accept(l, "=")) {
+			return emit(l, TYPE_LESS_EQUALS);
+		} else {
+			return emit(l, TYPE_LESS);
+		}
+	} else if (accept(l, ">")) {
+		if (accept(l, "=")) {
+			return emit(l, TYPE_GREATER_EQUALS);
+		} else {
+			return emit(l, TYPE_GREATER);
+		}
+
+	// Numbers:
 	} else if (acceptRun(l, NUMBERS)) {
 		if (accept(l, ".")) {
 			if (acceptRun(l, NUMBERS)) {
@@ -178,7 +207,7 @@ token *lexer_next_token(lexer *l) {
 			return emit(l, TYPE_INT);
 		}
 
-	// Lex quotes
+	// Quotes
 	} else if (skip(l, QUOTE)) {
 		if (acceptRun(l, SYMBOLCHARS)) {
 			return emit(l, TYPE_QUOTE);
@@ -186,11 +215,7 @@ token *lexer_next_token(lexer *l) {
 			return error(l, "Invalid quote char");
 		}
 
-	// Lex operators:
-	} else if (acceptRun(l, OPERATORCHARS)) {
-		return emit(l, TYPE_OPERATOR);
-
-	// Lex symbols:
+	// Symbols:
 	} else if (acceptRun(l, SYMBOLCHARS)) {
 		return emit(l, TYPE_SYMBOL);
 	}
