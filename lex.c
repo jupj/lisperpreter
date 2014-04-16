@@ -110,7 +110,7 @@ token *emit(lexer *l, int type) {
  * Returns a pointer to the accepted char if successful, otherwise NULL.
  */
 char *accept(lexer *l, char *validchars) {
-	if (strchr(validchars, *l->next)) {
+	if ((l->next < l->dataend) && (strchr(validchars, *l->next))) {
 		return l->next++;
 	}
 	return NULL;
