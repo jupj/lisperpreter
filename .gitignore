@@ -1,3 +1,5 @@
 Vagrantfile
 bootstrap.sh
 .vagrant
+*.o
+lp
