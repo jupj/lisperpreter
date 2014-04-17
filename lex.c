@@ -84,7 +84,7 @@ token *error(lexer *l, char *message) {
  * Helper function - emits a token of the chars between l->start and l->next.
  * Updates l->start to point at l->next.
  */
-token *emit(lexer *l, int type) {
+token *emit(lexer *l, token_tag type) {
 	if ((l->start < l->next) && *l->start) {
 		token *t = malloc(sizeof(token));
 		t->type = type;
@@ -157,67 +157,67 @@ token *lexer_next_token(lexer *l) {
 
 	// Whitespace:
 	} else if (acceptRun(l, WHITESPACE)) {
-		return emit(l, TYPE_WHITESPACE);
+		return emit(l, TT_WHITESPACE);
 
 	// Parens:
 	} else if (accept(l, "(")) {
-		return emit(l, TYPE_OPEN_PAREN);
+		return emit(l, TT_OPEN_PAREN);
 	} else if (accept(l, ")")) {
-		return emit(l, TYPE_CLOSE_PAREN);
+		return emit(l, TT_CLOSE_PAREN);
 
 	// One-character operators:
 	} else if (accept(l, "+")) {
-		return emit(l, TYPE_SUM);
+		return emit(l, TT_SUM);
 	} else if (accept(l, "-")) {
-		return emit(l, TYPE_SUBTRACT);
+		return emit(l, TT_SUBTRACT);
 	} else if (accept(l, "*")) {
-		return emit(l, TYPE_MULTIPLY);
+		return emit(l, TT_MULTIPLY);
 	} else if (accept(l, "=")) {
-		return emit(l, TYPE_EQUALS);
+		return emit(l, TT_EQUALS);
 
 	// One- or two character operators:
 	} else if (accept(l, "/")) {
 		if (accept(l, "=")) {
-			return emit(l, TYPE_NOT_EQUALS);
+			return emit(l, TT_NOT_EQUALS);
 		} else {
-			return emit(l, TYPE_DIVIDE);
+			return emit(l, TT_DIVIDE);
 		}
 	} else if (accept(l, "<")) {
 		if (accept(l, "=")) {
-			return emit(l, TYPE_LESS_EQUALS);
+			return emit(l, TT_LESS_EQUALS);
 		} else {
-			return emit(l, TYPE_LESS);
+			return emit(l, TT_LESS);
 		}
 	} else if (accept(l, ">")) {
 		if (accept(l, "=")) {
-			return emit(l, TYPE_GREATER_EQUALS);
+			return emit(l, TT_GREATER_EQUALS);
 		} else {
-			return emit(l, TYPE_GREATER);
+			return emit(l, TT_GREATER);
 		}
 
 	// Numbers:
 	} else if (acceptRun(l, NUMBERS)) {
 		if (accept(l, ".")) {
 			if (acceptRun(l, NUMBERS)) {
-				return emit(l, TYPE_FLOAT);
+				return emit(l, TT_FLOAT);
 			} else {
 				return error(l, "Invalid number format");
 			}
 		} else {
-			return emit(l, TYPE_INT);
+			return emit(l, TT_INT);
 		}
 
 	// Quotes
 	} else if (skip(l, QUOTE)) {
 		if (acceptRun(l, SYMBOLCHARS)) {
-			return emit(l, TYPE_QUOTE);
+			return emit(l, TT_QUOTE);
 		} else {
 			return error(l, "Invalid quote char");
 		}
 
 	// Symbols:
 	} else if (acceptRun(l, SYMBOLCHARS)) {
-		return emit(l, TYPE_SYMBOL);
+		return emit(l, TT_SYMBOL);
 	}
 
 	// If we've come this far, there is an unexpected character:

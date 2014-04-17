@@ -4,38 +4,38 @@
 /*
  * enum of lexer token types
  */
-enum {
-	TYPE_ERROR,
+typedef enum Token_tag {
+	TT_ERROR,
 
-	TYPE_OPEN_PAREN, 
-	TYPE_CLOSE_PAREN, 
+	TT_OPEN_PAREN, 
+	TT_CLOSE_PAREN, 
 
-	TYPE_SUM, 
-	TYPE_SUBTRACT, 
-	TYPE_MULTIPLY, 
-	TYPE_DIVIDE, 
+	TT_SUM, 
+	TT_SUBTRACT, 
+	TT_MULTIPLY, 
+	TT_DIVIDE, 
 
-	TYPE_EQUALS, 
-	TYPE_NOT_EQUALS, 
-	TYPE_LESS, 
-	TYPE_LESS_EQUALS, 
-	TYPE_GREATER,
-	TYPE_GREATER_EQUALS,
+	TT_EQUALS, 
+	TT_NOT_EQUALS, 
+	TT_LESS, 
+	TT_LESS_EQUALS, 
+	TT_GREATER,
+	TT_GREATER_EQUALS,
 
-	TYPE_WHITESPACE,
+	TT_WHITESPACE,
 
-	TYPE_FLOAT, 
-	TYPE_INT, 
-	TYPE_STRING, 
+	TT_FLOAT, 
+	TT_INT, 
+	TT_STRING, 
 
-	TYPE_QUOTE, 
-	TYPE_SYMBOL};
+	TT_QUOTE, 
+	TT_SYMBOL} token_tag;
 
 /*
  * struct for the tokens produced by the lexer
  */
 typedef struct Token {
-	int type;
+	token_tag type;
 	char *data;
 } token;
 
