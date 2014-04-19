@@ -6,6 +6,7 @@
  */
 typedef enum Token_tag {
 	TT_ERROR,
+	TT_EOF,
 
 	TT_OPEN_PAREN, 
 	TT_CLOSE_PAREN, 

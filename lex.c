@@ -68,16 +68,31 @@ void lexer_set_data(lexer *l, char *data) {
  * Helper function - emits an end-of-file token.
  */
 token *eof(lexer *l) {
-	debug("EOF");
-	return NULL;
+	token *t = malloc(sizeof(token));
+	t->type = TT_EOF;
+
+	// Empty data string
+	t->data = (char *) malloc(sizeof(char));
+	t->data[0] = '\0';
+	return t;
 }
 
 /*
  * Helper function - emits an error token.
  */
 token *error(lexer *l, char *message) {
-	printf("ERROR: '%s'\n", message);
-	return NULL;
+	token *t = malloc(sizeof(token));
+	t->type = TT_ERROR;
+
+	// Copy data string
+	t->data = (char *) malloc((strlen(message) + 1)*sizeof(char));
+	if (t->data) {
+       strcpy(t->data, message);
+	} else {
+		printf("ERROR: could not allocate memory for token data\n");
+		return NULL;
+	}
+	return t;
 }
 
 /*
