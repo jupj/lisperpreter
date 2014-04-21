@@ -11,10 +11,18 @@ void print_tokens(lexer *l, char *data) {
 	lexer_set_data(l, data);
 	token *t;
 	while ((t = lexer_next_token(l))) {
+		if (t->type == TT_ERROR) {
+			printf("ERROR: %s\n", t->data);
+			break;
+		}
+
+		if (t->type == TT_EOF) {
+			puts("End of data");
+			break;
+		}
 		printf("Token: '%s' (type %d)\n", t->data, t->type);
 		token_free(t);
 	}
-	puts("End of data");
 }
 
 int main(int argc, char **argv) {

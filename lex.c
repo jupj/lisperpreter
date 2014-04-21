@@ -15,9 +15,8 @@
  * Characters of lexer
  */
 #define WHITESPACE " \t\r\n"
-#define QUOTE "'"
-#define NUMBERS "0123456789"
-#define SYMBOLCHARS "abcdefghijklmnopqrstuvwqyzABCDEFGHIJKLMNOPQRSTUVWQYZ0123456789-?"
+#define SYMBOLCHARS "abcdefghijklmnopqrstuvwqyzABCDEFGHIJKLMNOPQRSTUVWQYZ0123456789!$,_-./:;?+<=>#%&*@[]{|}`^~"
+
 
 /*
  * A struct for the lexer. The members are only used inside this module.
@@ -120,12 +119,20 @@ token *emit(lexer *l, token_tag type) {
 }
 
 /*
+ * Helper function - checks the next char without movin l->next forward.
+ * Returns 1 if next char is within validchars, 0 otherwise.
+ */
+int is_next(lexer *l, char *validchars) {
+	return ((l->next < l->dataend) && (strchr(validchars, *l->next)));
+}
+
+/*
  * Helper function - moves l->next forward one char if the char at
  * current l->next is in the supplied string.
  * Returns a pointer to the accepted char if successful, otherwise NULL.
  */
 char *accept(lexer *l, char *validchars) {
-	if ((l->next < l->dataend) && (strchr(validchars, *l->next))) {
+	if (is_next(l, validchars)) {
 		return l->next++;
 	}
 	return NULL;
@@ -160,79 +167,80 @@ char *skip(lexer *l, char *skippedchars) {
 }
 
 /*
+ * Helper function - lex a whole string and emit the string.
+ * Returns the lexed string token.
+ */
+token *emit_string(lexer *l) {
+	if (!accept(l, "\""))
+		return error(l, "Expected \" character");
+
+	int escaped = 0;
+	while ((l->next < l->dataend) && (!is_next(l, "\""))) {
+		if ((!escaped) && is_next(l, "\\")) {
+			l->next++;
+			escaped = 1;
+		} else {
+			escaped = 0;
+		}
+		l->next++;
+	}
+
+	if (!accept(l, "\""))
+		return error(l, "Expected \" character");
+
+	if (!is_break_next(l))
+		return error(l, "Expected whitespace or end of list");
+
+	return emit(l, TT_STRING);
+}
+
+/*
+ * Helper function - check that the next character is a valid "break" after a symbol.
+ */
+int is_break_next(lexer *l) {
+	return (is_next(l, WHITESPACE) || is_next(l, ")") || (l->next >= l->dataend));
+}
+
+
+
+/*
  * Lex the next token from the data.
  * Returns the lexed token.
  * Caller must free the token with token_free.
  */
 token *lexer_next_token(lexer *l) {
+	
+	// Skip Whitespace:
+	skip(l, WHITESPACE);
+
 	// End of data:
 	/*if (('\0' == (*l->next)) || (l->next >= l->dataend)) {*/
 	if (l->next >= l->dataend) {
 		return eof(l);
-
-	// Whitespace:
-	} else if (acceptRun(l, WHITESPACE)) {
-		return emit(l, TT_WHITESPACE);
 
 	// Parens:
 	} else if (accept(l, "(")) {
 		return emit(l, TT_OPEN_PAREN);
 	} else if (accept(l, ")")) {
 		return emit(l, TT_CLOSE_PAREN);
-
-	// One-character operators:
-	} else if (accept(l, "+")) {
-		return emit(l, TT_SUM);
-	} else if (accept(l, "-")) {
-		return emit(l, TT_SUBTRACT);
-	} else if (accept(l, "*")) {
-		return emit(l, TT_MULTIPLY);
-	} else if (accept(l, "=")) {
-		return emit(l, TT_EQUALS);
-
-	// One- or two character operators:
-	} else if (accept(l, "/")) {
-		if (accept(l, "=")) {
-			return emit(l, TT_NOT_EQUALS);
-		} else {
-			return emit(l, TT_DIVIDE);
-		}
-	} else if (accept(l, "<")) {
-		if (accept(l, "=")) {
-			return emit(l, TT_LESS_EQUALS);
-		} else {
-			return emit(l, TT_LESS);
-		}
-	} else if (accept(l, ">")) {
-		if (accept(l, "=")) {
-			return emit(l, TT_GREATER_EQUALS);
-		} else {
-			return emit(l, TT_GREATER);
-		}
-
-	// Numbers:
-	} else if (acceptRun(l, NUMBERS)) {
-		if (accept(l, ".")) {
-			if (acceptRun(l, NUMBERS)) {
-				return emit(l, TT_FLOAT);
-			} else {
-				return error(l, "Invalid number format");
-			}
-		} else {
-			return emit(l, TT_INT);
-		}
-
-	// Quotes
-	} else if (skip(l, QUOTE)) {
-		if (acceptRun(l, SYMBOLCHARS)) {
+	
+	// Quote:
+	} else if (accept(l, "'")) {
+		if (is_next(l, WHITESPACE))
+			return error(l, "Expected an expression directly after quote");
+		else
 			return emit(l, TT_QUOTE);
-		} else {
-			return error(l, "Invalid quote char");
-		}
-
-	// Symbols:
+	
+	// Strings
+	} else if (is_next(l, "\"")) {
+		return emit_string(l);
+	
+	// Symbol:
 	} else if (acceptRun(l, SYMBOLCHARS)) {
-		return emit(l, TT_SYMBOL);
+		if (!is_break_next(l))
+			return error(l, "Expected whitespace or end of list");
+		else
+			return emit(l, TT_SYMBOL);
 	}
 
 	// If we've come this far, there is an unexpected character:
