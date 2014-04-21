@@ -1,29 +1,23 @@
 #ifndef parse_h
 #define parse_h
 
-typedef enum Ast_tag {
-	AT_SUM, 
-	AT_SUBTRACT, 
-	AT_MULTIPLY, 
-	AT_DIVIDE,
+enum ast_tag {
+	AT_ERROR,
+	AT_LIST,
+	AT_QUOTE,
+	AT_SYMBOL,
+};
 
-	AT_FLOAT, 
-	AT_INT, 
-	AT_STRING
-} ast_tag;
-
-typedef struct Ast_node ast_node;
-
-struct Ast_node {
-	ast_tag tag;
+struct ast_node {
+	enum ast_tag tag;
 	token *t;
-	ast_node *next;
-	ast_node *child;
+	struct ast_node *next;
+	struct ast_node *child;
 };
 
 typedef struct Parser parser;
 
-typedef enum Parse_result {PR_READY, PR_INCOMPLETE, PR_ERROR} parse_result;
+enum parse_result {PR_OK, PR_ERROR};
 
 /*
  * Allocate memory and init a parser.
@@ -40,12 +34,12 @@ parser *parser_init();
  *   added to the AST.
  * Returns PR_ERROR if there were errors in the code.
  */
-parser_result parser_parse(parser* p, char *data);
+enum parse_result parser_parse(parser* p, char *data);
 
 /*
  * Get the root node of the AST in the parser.
  */
-ast_node *parser_get_ast(parser *p);
+struct ast_node *parser_get_ast(parser *p);
 
 /*
  * Frees the memory associated with the parser struct.

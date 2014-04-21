@@ -167,6 +167,13 @@ char *skip(lexer *l, char *skippedchars) {
 }
 
 /*
+ * Helper function - check that the next character is a valid "break" after a symbol.
+ */
+int is_break_next(lexer *l) {
+	return (is_next(l, WHITESPACE) || is_next(l, ")") || (l->next >= l->dataend));
+}
+
+/*
  * Helper function - lex a whole string and emit the string.
  * Returns the lexed string token.
  */
@@ -191,17 +198,8 @@ token *emit_string(lexer *l) {
 	if (!is_break_next(l))
 		return error(l, "Expected whitespace or end of list");
 
-	return emit(l, TT_STRING);
+	return emit(l, TT_SYMBOL);
 }
-
-/*
- * Helper function - check that the next character is a valid "break" after a symbol.
- */
-int is_break_next(lexer *l) {
-	return (is_next(l, WHITESPACE) || is_next(l, ")") || (l->next >= l->dataend));
-}
-
-
 
 /*
  * Lex the next token from the data.

@@ -11,7 +11,6 @@ typedef enum Token_tag {
 	TT_OPEN_PAREN, 
 	TT_CLOSE_PAREN, 
 
-	TT_STRING, 
 	TT_QUOTE, 
 	TT_SYMBOL} token_tag;
 
