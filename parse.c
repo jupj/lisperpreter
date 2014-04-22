@@ -54,7 +54,7 @@ struct ast_node *parser_error(parser *p, char *msg) {
 	p->errors = 1;
 	fprintf(stderr, "ERROR: %s\n", msg);
 
-	struct ast_node *err = malloc(sizeof(err));
+	struct ast_node *err = malloc(sizeof(struct ast_node));
 	err->tag = AT_ERROR;
 	err->t = get_next(p);
 	err->next = NULL;
@@ -69,7 +69,7 @@ struct ast_node *parser_error(parser *p, char *msg) {
 struct ast_node *symbol(parser* p) {
 	token *t = match(p, TT_SYMBOL);
 	if (t) {
-		struct ast_node *s = malloc(sizeof(s));
+		struct ast_node *s = malloc(sizeof(struct ast_node));
 		s->tag = AT_SYMBOL;
 		s->t = t;
 		s->next = NULL;
@@ -86,7 +86,7 @@ struct ast_node *symbol(parser* p) {
 struct ast_node *quote(parser* p) {
 	token *t = match(p, TT_QUOTE);
 	if (t) {
-		struct ast_node *q = malloc(sizeof(q));
+		struct ast_node *q = malloc(sizeof(struct ast_node));
 		q->tag = AT_QUOTE;
 		q->t = t;
 		q->next = NULL;
@@ -103,7 +103,7 @@ struct ast_node *quote(parser* p) {
 struct ast_node *s_expr(parser* p) {
 	token *t = match(p, TT_OPEN_PAREN);
 	if (t) {
-		struct ast_node *list = malloc(sizeof(list));
+		struct ast_node *list = malloc(sizeof(struct ast_node));
 		list->tag = AT_LIST;
 		list->t = t;
 		list->next = NULL;
