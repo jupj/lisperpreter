@@ -57,6 +57,21 @@ void print_ast(struct ast_node *node) {
 		print_ast(node->next);
 }
 
+void eval(struct ast_node *node) {
+	if ((node->tag == AT_LIST) && node->child && (node->child->tag == AT_SYMBOL) && (strcmp(node->child->t->data, "+") == 0)) {
+		// Add:
+		struct ast_node *term = node->child->next;
+		int val = 0;
+		while (term) {
+			val += atoi(term->t->data);
+			term = term->next;
+		}
+		printf("%d\n", val);
+	} else {
+		print_ast(node);
+	}
+}
+
 void test_parser() {
 	parser *p = parser_init();
 
@@ -65,7 +80,7 @@ void test_parser() {
 		char *input = readline("> ");
 		add_history(input);
 		parser_parse(p, input);
-		print_ast(parser_get_ast(p));
+		eval(parser_get_ast(p));
 		free(input);
 	}
 
