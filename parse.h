@@ -1,5 +1,6 @@
 #ifndef parse_h
 #define parse_h
+#include "lex.h"
 
 enum ast_tag {
 	AT_ERROR,

@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "lex.h"
 #include "parse.h"
 
 struct Parser {
